@@ -110,8 +110,37 @@ static async Atualizar(req, res){
         catch (error) {
             return res.status(500).json({ error: "Erro ao listar categoria", error: error.message });
         }
-}
+} 
+
+        // filtrar por tipo de categoria
+        static async filtrarCategoria(req, res){
+            // o valor sera enviado por parametro na url, deve ser enviado dessa maneira 
+            // ?tipo_transacao=entrada 
+            const { tipo_transacao } = req.query; 
+
+            try{
+                const filtros = []; 
+                const valores = []; 
+
+                if(tipo_transacao){
+                    filtros.push(`tipo_transacao = $${valores.length + 1}`);
+                    valores.push(tipo_transacao);
+                } 
+                const query = ` 
+                SELECT * FROM categorias 
+                ${filtros.length ? `WHERE ${filtros.join(" AND ")} ` : ""} and ativo = true
+                ORDER BY id_categoria DESC 
+                `
+                const resultado = await BD.query(query, valores) 
+            } catch(error){
+
+            }
+        }
 }
 
-export default rotasCategorias;
+export default rotasCategorias; 
+
+// rota de listar categorias 
+// rota de atualizar categorias 
+// rota de desativar categorias 
 

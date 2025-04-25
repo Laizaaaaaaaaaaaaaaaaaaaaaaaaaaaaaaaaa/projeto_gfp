@@ -1,7 +1,7 @@
 import express from 'express'; 
 import { testarConexao } from './db.js'; 
 import cors from 'cors'; 
-import rotasUsuarios from './routes/rotasUsuarios.js';
+import rotasUsuarios, {autenticarToken} from './routes/rotasUsuarios.js';
 import rotasCategorias from './routes/rotasCategorias.js';
 import rotasSubcategorias from './routes/rotasSubcategorias.js'; 
 const app = express();
@@ -16,12 +16,12 @@ app.get('/', (req, res) => {
 
 //Rotas Usuarios 
 app.post('/usuarios', rotasUsuarios.Novousuario)
-app.get('/usuarios',rotasUsuarios.Listar)
+app.get('/usuarios', autenticarToken, rotasUsuarios.Listar)
 app.get('/usuarios/:id', rotasUsuarios.ListarporID)
 app.put('/usuarios/:id', rotasUsuarios.AtualizartodosCampos)
-app.delete('/usuarios/:id',  rotasUsuarios.Deletar)
-app.patch('/usuarios/:id', rotasUsuarios.Atualizar)
-app.post('/login', rotasUsuarios.Login)
+app.delete('/usuarios/:id', autenticarToken, rotasUsuarios.Deletar) 
+app.patch('/usuarios/:id', autenticarToken, rotasUsuarios.Atualizar) 
+app.post('/usuarios/login', rotasUsuarios.Login)
 
 
 // Rotas categorias
@@ -41,6 +41,7 @@ app.put('/subcategorias/:id', rotasSubcategorias.atualizartodosCampos)
 app.patch('/subcategorias/:id', rotasSubcategorias.Atualizar)
 
 // Rotas Local Transações 
+//app.post('/localtransacoes', rotasUsuarios.NovoLocalTransacao) 
 
 
 
@@ -48,4 +49,7 @@ app.patch('/subcategorias/:id', rotasSubcategorias.Atualizar)
 const porta = 3000; 
 app.listen(porta, () => { 
     console.log(`Api http://localhost:${porta}`) 
-})
+}) 
+
+
+export default app; 

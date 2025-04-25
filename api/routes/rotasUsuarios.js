@@ -19,7 +19,7 @@ class rotasUsuarios{
                             VALUES ($1, $2, $3, $4) RETURNING *`;
             const valores = [nome, email, senhaCriptografada, tipo_acesso];
             const resposta = await BD.query(query, valores);
-           
+           res.status(201).json(resposta.rows[0]);
         } catch (error) {
             console.error("Erro ao cadastrar usuário:", error);
             return res.status(500).json({ error: "Erro ao cadastrar usuário" });
@@ -82,8 +82,10 @@ class rotasUsuarios{
                 valores.push(email)
             }
             if(senha!== undefined){
-                campos.push(`senha = $${valores.length + 1}`)
-                valores.push(senha)
+                campos.push(`senha = $${valores.length + 1}`) 
+                const saltRounds = 10; 
+                const senhaCriptografada = await bcrypt.hash(senha, saltRounds)
+                valores.push(senhaCriptografada) 
             }
             if(tipo_acesso!== undefined){
                 campos.push(`tipo_acesso = $${valores.length + 1}`)
@@ -128,10 +130,15 @@ class rotasUsuarios{
                 {id: usuario.id_usuario, nome: usuario.nome, email: usuario.email},
                 //signature
                 SECRET_KEY,
-                {expiresIn: '1h'}
+               {expiresIn: '1h'}
             )
 
-            return res.status(200).json({message: 'Login executado com sucesso', token});
+            return res.status(200).json({message: 'Login executado com sucesso', token, 
+                id_usuario: usuarioEncontrado.id_usuario, 
+                nome: usuarioEncontrado.nome,
+                email: usuarioEncontrado.email,
+                tipo_acesso: usuarioEncontrado.tipo_acesso,
+            });
             // return res.status(200).json({ message: "Login bem-sucedido" })
 
         } catch (error) {
@@ -145,7 +152,7 @@ class rotasUsuarios{
 export function autenticarToken(req, res, next){
     // Extrair do token o cabeçalho da requisição
     // const token = req.headers.authorization?.replace('Bearer ', '')
-    const token = req.headers['Authorization']
+    const token = req.headers['authorization']
 
     // Verificar se o token foi fornecido
     if(!token) return res.status(401).json({error: "Token não fornecido"})
