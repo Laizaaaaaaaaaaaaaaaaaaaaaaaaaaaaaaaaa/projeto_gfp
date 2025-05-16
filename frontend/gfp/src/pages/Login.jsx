@@ -9,6 +9,7 @@ export default function Login () {
         const [email, setemail] = useState('')
         const [senha, setsenha] = useState('')
         const [mensagem, setmensagem] = useState('') 
+        const [lembrar, setlembrar] = useState(false); 
     
         async function botaoEntrar(e) {
             e.preventDefault(); 
@@ -31,7 +32,7 @@ export default function Login () {
                 if(!resposta.ok){
                     const dados = await resposta.json();
                     navigate('principal') 
-                    localStorage.setItem('UsuarioLogado', JSON.stringify(dados)); 
+                    localStorage.setItem('UsuarioLogado', JSON.stringify({...dados, lembrar})); 
                 }else {
                     throw new Error('Email ou senha incorretos!'); 
                 }
@@ -61,9 +62,19 @@ export default function Login () {
             <p>Senha</p>
             <input onChange={(e) => setsenha(e.target.value)} value={senha} type="text" placeholder="Digite sua Senha"></input>
             <br/>
-          <button onClick={botaoEntrar} type="button" >Entrar</button>
+            <p>{mensagem}</p> 
+
+            <div className={Styles.between}>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <input type= "checkbox" style={{ marginRight: '5px'}}
+                    checked={lembrar} onChange={(e) => setlembrar(e.target.checked)}/> 
+                    <label>Lembrar-me</label> 
+                </div>
+
+            </div> 
+
+            <button onClick={botaoEntrar} type="button" >Entrar</button>
             <button onClick={botaoLimpar} type="button" >Limpar</button>
-            <p>{mensagem}</p>
 
         </div>
     ) 

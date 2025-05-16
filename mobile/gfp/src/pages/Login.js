@@ -2,13 +2,30 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import { LinearGradient } from 'expo-linear-gradient';
 import * as animar from 'react-native-animatable'
 import { enderecoServidor } from '../utils';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // '#00f2fe'
 const Login = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [email, setEmail] = useState('laiza@gmail.com');
+  const [senha, setSenha] = useState('123'); 
+  const [showPassword, setShowPassword] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [lembrar, setLembrar] = useState(false); 
+
+    useEffect(() => { 
+      const buscarUsuarioLogado = async () => {
+        const usuarioLogado = await AsyncStorage.getItem('UsuarioLogado'); 
+        if(usuarioLogado){ 
+          const usuario = JSON.parse(usuarioLogado); 
+          if (usuario.lembrar == true){
+            navigation.navigate('MenuDrawer'); 
+          }
+      } 
+    } 
+
+    buscarUsuarioLogado(); 
+  }, [])
 
   async function botaoEntrar() {
 
@@ -27,9 +44,14 @@ const Login = ({ navigation }) => {
                 })
             }
         ) 
-        if(!resposta.ok){
-            const dados = await resposta.json();
+        const dados = await resposta.json();
+        if(resposta.ok){
+      
             AsyncStorage.setItem('UsuarioLogado', JSON.stringify(dados)); 
+            // Aqui você pode armazenar o token em um estado global ou AsyncStorage, se necessário
+            AsyncStorage.setItem('UsuarioLogado', JSON.stringify({...dados, lembrar}));
+
+
             navigation.navigate('MenuPrincipal'); 
         } else {
             throw new Error('Email ou senha incorretos!');
