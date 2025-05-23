@@ -52,6 +52,20 @@ export default function Login () {
             setmensagem('');
         } 
 
+        useEffect(() => { 
+      const buscarUsuarioLogado = async () => {
+        const usuarioLogado = await localStorage.getItem('UsuarioLogado'); 
+        if(usuarioLogado){ 
+          const usuario = JSON.parse(usuarioLogado); 
+          if (usuario.lembrar == true){
+            navigate('/principal'); 
+          }
+      } 
+    } 
+
+    buscarUsuarioLogado(); 
+  }, [])
+
 
     return( 
         <div> 

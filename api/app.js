@@ -5,15 +5,21 @@ import rotasUsuarios, {autenticarToken} from './routes/rotasUsuarios.js';
 import rotasCategorias from './routes/rotasCategorias.js';
 import rotasSubcategorias from './routes/rotasSubcategorias.js'; 
 import rotasContas from './routes/rotasContas.js'; 
-import rotasTransacoes from './routes/rotasTransacoes.js';
+import rotasTransacoes from './routes/rotasTransacoes.js'; 
+
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './swagger.js'; 
+
 const app = express();
 testarConexao();  
 
 app.use(cors());
 app.use(express.json()); 
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec)) 
+
 app.get('/', (req, res) => {
-    res.send('Api Funcionando!');  
+    res.redirect('/api-docs');  
 }) 
 
 //Rotas Usuarios 

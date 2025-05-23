@@ -1,169 +1,111 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as animar from 'react-native-animatable'
+import { View, Text, TextInput, TouchableOpacity, Switch} from 'react-native';
+import Estilos from '../styles/Estilos';
 import { enderecoServidor } from '../utils';
 import React, { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// '#00f2fe'
-const Login = ({ navigation }) => {
-  const [email, setEmail] = useState('laiza@gmail.com');
-  const [senha, setSenha] = useState('123'); 
-  const [showPassword, setShowPassword] = useState(false);
-  const [isActive, setIsActive] = useState(false);
-  const [lembrar, setLembrar] = useState(false); 
 
-    useEffect(() => { 
-      const buscarUsuarioLogado = async () => {
-        const usuarioLogado = await AsyncStorage.getItem('UsuarioLogado'); 
-        if(usuarioLogado){ 
-          const usuario = JSON.parse(usuarioLogado); 
-          if (usuario.lembrar == true){
-            navigation.navigate('MenuDrawer'); 
-          }
-      } 
-    } 
+export default function Login({ navigation }) {
+  navigation = useNavigation();
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [lembrar, setlembrar] = useState(false);
 
-    buscarUsuarioLogado(); 
+  useEffect(() => {
+    const buscarUsuarioLogado = async () => {
+      console.log('buscando usuario logado');
+      const UsuarioLogado = await AsyncStorage.getItem('UsuarioLogado');
+      console.log(UsuarioLogado);
+     
+      if (UsuarioLogado) {
+        const usuario = JSON.parse(UsuarioLogado)
+        console.log(usuario);
+       
+        if (usuario.lembrar == true) {
+          navigation.navigate('MenuPrincipal');
+        }
+      }
+    }
+    buscarUsuarioLogado();
   }, [])
 
   async function botaoEntrar() {
+    try {
+      if (email === "" || senha === "") {
+        throw new Error("Preencha todos os campos!");
+      }
 
-    try{
-        if(email == '' || senha == ''){
-            throw new Error('Preencha todos os campos!');
-        }  
-        //Autenticando utilizando a API de backend com o fetch 
-        const resposta = await fetch(`${enderecoServidor}/usuarios/login`, 
-            {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json'}, 
-                body: JSON.stringify({
-                    email: email, 
-                    senha: senha, 
-                })
-            }
-        ) 
+      const resposta = await fetch(`${enderecoServidor}/usuarios/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          senha: senha
+        })
+      });
+
+      if (resposta.ok) {
         const dados = await resposta.json();
-        if(resposta.ok){
-      
-            AsyncStorage.setItem('UsuarioLogado', JSON.stringify(dados)); 
-            // Aqui você pode armazenar o token em um estado global ou AsyncStorage, se necessário
-            AsyncStorage.setItem('UsuarioLogado', JSON.stringify({...dados, lembrar}));
+        await AsyncStorage.setItem('UsuarioLogado', JSON.stringify({...dados, lembrar}));
+        navigation.navigate('MenuPrincipal');
+      } else {
+        throw new Error('Email ou senha incorretos ❌');
+      }
 
-
-            navigation.navigate('MenuPrincipal'); 
-        } else {
-            throw new Error('Email ou senha incorretos!');
-        }
     } catch (error) {
-        console.error('Erro ao realizar login:', error); 
-        alert(error.message); 
-        return; 
+      console.error("Erro ao fazer login:", error);
+      alert(error.message);
     }
-}  
+  }
 
-   
-  
   return (
-    <LinearGradient
-      colors={['#000080', '#000']}
-      style={styles.container}
-    >
-      <animar.View style={styles.box} animation="fadeInUp" duration={1500}>
-        <Text style={styles.title}>Bem-vindo de volta!</Text>
+    <View style={Estilos.conteudo}>
+      <View style={Estilos.loginContainer}>
+        <View style={Estilos.iconContainer}>
+          <Text style={{ fontSize: 29, color: Estilos.corPrincipal, fontWeight: 'bold' }}>Acesse sua Conta</Text>
+        </View>
 
+        <Text style={Estilos.label}>Email</Text>
         <TextInput
-          placeholder="E-mail"
+          placeholder="Digite seu Email"
           placeholderTextColor="#aaa"
-          style={styles.input}
-          value={email}
+          style={Estilos.input}
           onChangeText={setEmail}
+          value={email}
         />
 
+        <Text style={Estilos.label}>Senha</Text>
         <TextInput
-          placeholder="Senha"
+          placeholder="Digite sua senha"
           placeholderTextColor="#aaa"
           secureTextEntry
-          style={styles.input}
-          value={senha}
+          style={Estilos.input}
           onChangeText={setSenha}
+          value={senha}
         />
-       
-        <TouchableOpacity style={styles.botao} onPress={botaoEntrar}>
-          <Text style={styles.botaoTexto}>Entrar</Text>
+
+        <TouchableOpacity>
+          <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 10, alignItems: 'center'}}>
+            <Switch value={lembrar} onValueChange={setlembrar}/>
+            <Text>Lembrar-me</Text>
+          </View>
+
+          <Text style={Estilos.forgotPassword}>Esqueceu a senha?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('MenuTopTab')}>
-          <Text style={styles.botaoTexto}>Entrar no TopTab</Text>
+        <TouchableOpacity style={Estilos.button} onPress={botaoEntrar}>
+          <Text style={Estilos.buttonText}>Login</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('MenuBottomTab')}>
-          <Text style={styles.botaoTexto}>Entrar no BottomTab</Text>
-        </TouchableOpacity>
-       
-        {/* <TouchableOpacity>
-          <Text style={styles.registro}>Criar uma conta</Text>
+        {/* <TouchableOpacity style={Estilos.secondaryButton}>
+          <Text style={Estilos.secondaryButtonText}>Solicitar Acesso</Text>
         </TouchableOpacity> */}
-      </animar.View>
-    </LinearGradient>
+
+        <Text style={Estilos.bottomText}>
+          Não tem uma conta? <Text style={Estilos.linkText}>Cadastre-se</Text>
+        </Text>
+      </View>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center'
-    },
-    box: {
-      width: '85%',
-      padding: 30,
-      backgroundColor: 'rgba(255,255,255,0.95)',
-      borderRadius: 20,
-      shadowColor: '#000',
-      shadowOpacity: 0.2,
-      shadowOffset: { width: 0, height: 4 },
-      shadowRadius: 10,
-      elevation: 10,
-      alignItems: 'center',
-    },
-    title: {
-      fontSize: 24,
-      color: '#222',
-      fontWeight: 'bold',
-      marginBottom: 30,
-    },
-    input: {
-      width: '100%',
-      height: 50,
-      borderColor: '#ccc',
-      borderWidth: 1,
-      borderRadius: 12,
-      paddingHorizontal: 15,
-      marginBottom: 15,
-      backgroundColor: '#fff',
-      fontSize: 16,
-      color: '#333'
-    },
-    botao: {
-      width: '100%',
-      backgroundColor: '#000080',
-      paddingVertical: 14,
-      borderRadius: 12,
-      alignItems: 'center',
-      marginTop: 10,
-    },
-    botaoTexto: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    registro: {
-      marginTop: 15,
-      color: '#000080',
-      fontWeight: '600'
-    }
-  });
-
-export default Login;

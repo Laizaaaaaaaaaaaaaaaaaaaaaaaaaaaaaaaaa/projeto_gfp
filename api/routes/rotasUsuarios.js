@@ -130,7 +130,7 @@ class rotasUsuarios{
                 {id: usuario.id_usuario, nome: usuario.nome, email: usuario.email},
                 //signature
                 SECRET_KEY,
-               {expiresIn: '1h'}
+            //    {expiresIn: '1h'}
             )
 
             return res.status(200).json({message: 'Login executado com sucesso', token, 
